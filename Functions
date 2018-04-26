@@ -1,0 +1,55 @@
+*********Bitwise Operators*********
+
+#define something ((uint16_t)0x0001)
+
+You can set the least significant bit of a variable var using 
+
+var |= something
+
+Subject to some constraints, you can reset the least significant bit in var using var &= ~something;. You can flip the least significant bit using 
+
+var ^= something
+
+And you can find the value of the least significant bit using 
+
+var &= something
+
+**************How to configure and use GPIOs through the HAL API**************
+
+/* -2- Configure PA05 IO in output push-pull mode to
+         drive external LED */
+  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
+
+ /* -3- Toggle PA05 IO in an infinite loop */
+
+while (1)
+  {
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    /* Insert delay 100 ms */
+    HAL_Delay(100); // (based on variable incremented in SysTick ISR)
+  }
+}
+
+
+**************C library printf function to the UART**************
+
+Care must be taken when using HAL_Delay(), this function provides accurate delay (in milliseconds) based on variable incremented in SysTick ISR. This implies that if HAL_Delay() is called from a peripheral ISR process, then the SysTick interrupt must have higher priority (numerically lower) than the peripheral interrupt. Otherwise the caller ISR process will be blocked. To change the SysTick interrupt priority you have to use HAL_NVIC_SetPriority() function.
+
+int main(void)
+  HAL_Init();
+ SystemClock_Config();
+
+UartHandle.Instance          = USARTx;
+  
+  UartHandle.Init.BaudRate     = 9600;
+  UartHandle.Init.WordLength   = UART_WORDLENGTH_8B;
+  UartHandle.Init.StopBits     = UART_STOPBITS_1;
+  UartHandle.Init.Parity       = UART_PARITY_ODD;
+  UartHandle.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+  UartHandle.Init.Mode         = UART_MODE_TX_RX;
+  UartHandle.Init.OverSampling = UART_OVERSAMPLING_16;
+
